@@ -1,10 +1,11 @@
-import { ExternalLink, FolderOpen, Globe, Image, FileText, Wrench } from "lucide-react";
+import { ExternalLink, FolderOpen, Globe, Image, FileText, Wrench, BarChart2 } from "lucide-react";
 import { PageHeader } from "../components/Card";
 import { useData } from "../hooks/useData";
 import type { ApiLink } from "../types";
 
 const TYPE_ICONS: Record<string, React.ElementType> = {
   "Google Drive": FolderOpen,
+  "Analytics Dashboard": BarChart2,
   "Landing Page": Globe,
   "Ad Creative": Image,
   "Report": FileText,
@@ -13,6 +14,7 @@ const TYPE_ICONS: Record<string, React.ElementType> = {
 
 const TYPE_COLORS: Record<string, string> = {
   "Google Drive": "text-blue-400 bg-blue-400/10 border-blue-400/20",
+  "Analytics Dashboard": "text-emerald-400 bg-emerald-400/10 border-emerald-400/20",
   "Landing Page": "text-emerald-400 bg-emerald-400/10 border-emerald-400/20",
   "Ad Creative": "text-violet-400 bg-violet-400/10 border-violet-400/20",
   "Report": "text-amber-400 bg-amber-400/10 border-amber-400/20",
@@ -93,11 +95,4 @@ function LinkCard({ link, Icon }: { link: ApiLink; Icon: React.ElementType }) {
           <ExternalLink className="w-3 h-3 text-zinc-500 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity" />
         </div>
         {link.description && (
-          <p className="text-xs text-zinc-500 mt-0.5 leading-relaxed line-clamp-2">
-            {link.description}
-          </p>
-        )}
-      </div>
-    </a>
-  );
-}
+          <p className="text-xs text-z

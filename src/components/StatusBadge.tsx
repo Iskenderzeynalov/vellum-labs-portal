@@ -37,6 +37,38 @@ const statusConfig: Record<string, { dot: string; text: string; bg: string }> =
       text: "text-emerald-400",
       bg: "bg-emerald-400/10",
     },
+    // Notion Finances DB status values
+    Payed: {
+      dot: "bg-emerald-400",
+      text: "text-emerald-400",
+      bg: "bg-emerald-400/10",
+    },
+    Sent: {
+      dot: "bg-blue-400",
+      text: "text-blue-400",
+      bg: "bg-blue-400/10",
+    },
+    Processing: {
+      dot: "bg-amber-400",
+      text: "text-amber-400",
+      bg: "bg-amber-400/10",
+    },
+    // Notion Status property values
+    "In progress": {
+      dot: "bg-blue-400",
+      text: "text-blue-400",
+      bg: "bg-blue-400/10",
+    },
+    "Not started": {
+      dot: "bg-zinc-500",
+      text: "text-zinc-400",
+      bg: "bg-zinc-500/10",
+    },
+    Done: {
+      dot: "bg-emerald-400",
+      text: "text-emerald-400",
+      bg: "bg-emerald-400/10",
+    },
     "In Progress": {
       dot: "bg-blue-400",
       text: "text-blue-400",
@@ -124,36 +156,4 @@ export function StatusBadge({ status }: { status: Status }) {
 export function PriorityBadge({ priority }: { priority: string }) {
   const config = priorityConfig[priority] ?? {
     text: "text-zinc-400",
-    bg: "bg-zinc-500/10",
-    border: "border-zinc-500/20",
-  };
-
-  return (
-    <span
-      className={clsx(
-        "inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border",
-        config.bg,
-        config.text,
-        config.border
-      )}
-    >
-      {priority}
-    </span>
-  );
-}
-
-export function TypeBadge({ type }: { type: string }) {
-  const isClient = type === "Client";
-  return (
-    <span
-      className={clsx(
-        "inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border",
-        isClient
-          ? "bg-violet-400/10 text-violet-400 border-violet-400/20"
-          : "bg-zinc-500/10 text-zinc-400 border-zinc-500/20"
-      )}
-    >
-      {isClient ? "Your task" : "Vellum"}
-    </span>
-  );
-}
+    bg: "bg-zinc

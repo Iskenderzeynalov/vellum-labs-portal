@@ -8,12 +8,13 @@ export function Invoices() {
   const { data: invoices, loading, error } = useData<ApiInvoice[]>("/api/invoices");
   const allInvoices = invoices ?? [];
 
+  // Notion status values: "Sent" | "Processing" | "Payed"
   const totalPaid = allInvoices
-    .filter((inv) => inv.status === "Paid")
+    .filter((inv) => inv.status === "Payed")
     .reduce((sum, inv) => sum + (inv.amount ?? 0), 0);
 
   const outstanding = allInvoices
-    .filter((inv) => inv.status !== "Paid")
+    .filter((inv) => inv.status !== "Payed")
     .reduce((sum, inv) => sum + (inv.amount ?? 0), 0);
 
   return (
@@ -28,17 +29,17 @@ export function Invoices() {
           ))
         ) : (
           <>
-            <StatCard label="Total Paid" value={`$${totalPaid.toLocaleString()}`} sub="All time" />
+            <StatCard label="Total Paid" value={`€${totalPaid.toLocaleString()}`} sub="All time" />
             <StatCard
               label="Outstanding"
-              value={`$${outstanding.toLocaleString()}`}
+              value={`€${outstanding.toLocaleString()}`}
               sub={outstanding > 0 ? "Due soon" : "Nothing due"}
               accent={outstanding > 0}
             />
             <StatCard
               label="Invoices"
               value={allInvoices.length}
-              sub={`${allInvoices.filter((i) => i.status === "Paid").length} paid`}
+              sub={`${allInvoices.filter((i) => i.status === "Payed").length} paid`}
             />
           </>
         )}
@@ -81,7 +82,7 @@ function InvoiceRow({ invoice }: { invoice: ApiInvoice }) {
       </div>
       <div>
         <span className="text-sm font-semibold text-zinc-100">
-          {invoice.amount != null ? `${invoice.currency} ${invoice.amount.toLocaleString()}` : "—"}
+          {invoice.amount != null ? `€${invoice.amount.toLocaleString()}` : "—"}
         </span>
       </div>
       <div>
@@ -113,6 +114,4 @@ function InvoiceRow({ invoice }: { invoice: ApiInvoice }) {
 
 function formatDate(dateStr: string) {
   return new Date(dateStr).toLocaleDateString("en-US", {
-    month: "short", day: "numeric", year: "numeric",
-  });
-}
+    month: "

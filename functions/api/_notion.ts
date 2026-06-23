@@ -6,99 +6,66 @@
  *
  * PROPERTY NAME MAPPING
  * ─────────────────────
- * Update the PROPERTY_MAP below to match your actual Notion database field names.
- * The left side (keys) are our internal names — do NOT change these.
- * The right side (values) are your Notion property names — update these to match.
- *
- * Example: if your Clients database has "Email Addresses" instead of "Authorized Emails",
- *   change: clients: { authorizedEmails: "Authorized Emails" }
- *   to:     clients: { authorizedEmails: "Email Addresses" }
+ * The PROPERTY_MAP below uses exact Notion field names (including any
+ * leading/trailing spaces that exist in the actual database).
+ * Do NOT "clean up" the field names — they must match Notion verbatim.
  */
 
-// ─── Property name mappings — update right side to match YOUR Notion field names ───
+// ─── Property name mappings — matched to actual Notion field names ─────────────
+
 export const PROPERTY_MAP = {
   clients: {
-    name: "Client Name",
-    clientId: "Client ID",
-    authorizedEmails: "Authorized Emails",
-    portalActive: "Portal Active",
-    currentPhase: "Current Phase",
-    status: "Client Status",
-    mainGoal: "Main Goal",
-    healthStatus: "Health Status",
-    latestSummary: "Client-facing Summary",
-    nextSteps: "Next Steps",
-    // NEVER expose: "Notes" / "Internal Notes"
-  },
-  projects: {
-    client: "Client",
-    name: "Project Name",
-    status: "Project Status",
-    phase: "Phase",
-    startDate: "Start Date",
-    deadline: "Deadline",
-    summary: "Client-facing Summary",
-    visibleToClient: "Visible to Client",
-    // NEVER expose: "Internal Notes"
+    // Clients database
+    name: "Customer Name",        // title type
+    email: "Email",               // email type  ← used for auth lookup
+    status: "Status",             // status type
+    services: "Services",         // multi_select type
+    googleDrive: "Google Drive",  // url type
+    analyticsDashboard: "Analytics Dashboard", // url type
+    bookACall: "Book a Call",     // url type
+    newDeliverable: "New Deliverable", // url type
+    // ⚠️  Internal Notes, financial fields intentionally NOT listed
   },
   tasks: {
-    client: "Client",
-    name: "Task Name",
-    status: "Status",
-    priority: "Priority",
-    assignedTo: "Assigned To",
-    dueDate: "Due Date",
-    taskType: "Task Type",
-    description: "Client-facing Description",
-    visibleToClient: "Visible to Client",
-    // NEVER expose: "Internal Notes"
+    // Tasks & Deliverables database
+    client: "Client",                    // relation type
+    name: "Name of Deliverable",        // title type
+    status: "Status",                   // status type
+    priority: "Priority Level",         // select type
+    taskType: "Deliverable Type",       // select type
+    dueDate: "Due Date",                // date type
+    description: "Notes",               // rich_text type
+    visibleToClient: "Share to Client", // checkbox type
+    // ⚠️  Internal Notes intentionally NOT listed
   },
   reports: {
-    client: "Client",
-    period: "Reporting Period",
-    date: "Date",
-    spend: "Spend",
-    leads: "Leads",
-    cpl: "Cost Per Lead",
-    bookedCalls: "Booked Calls",
-    conversionRate: "Conversion Rate",
-    revenue: "Revenue",
-    summary: "Summary",
-    wins: "Wins",
-    problems: "Problems",
-    nextSteps: "Next Steps",
-    reportLink: "Report Link",
-    visibleToClient: "Visible to Client",
+    // Docs database — filtered to Category = "📃Report"
+    client: " Client",              // relation type (leading space — exact field name)
+    name: "Description",            // title type
+    category: "Category",           // select type
+    url: "URL",                     // url type
+    visibleToClient: "Share to Client", // checkbox type
   },
   meetings: {
-    client: "Client",
-    date: "Date",
-    title: "Meeting Title",
-    summary: "Summary",
-    decisions: "Decisions",
-    actionItems: "Action Items",
-    nextSteps: "Next Steps",
-    recordingLink: "Recording/Transcript Link",
-    visibleToClient: "Visible to Client",
-    // NEVER expose: "Internal Notes"
-  },
-  links: {
-    client: "Client",
-    type: "Type",
-    name: "Name",
-    url: "URL",
-    description: "Description",
-    visibleToClient: "Visible to Client",
+    // Meetings database — note trailing spaces on some field names
+    client: "Client ",              // relation type (trailing space — exact field name)
+    date: "Date & Time",            // date type
+    title: "Meeting Title ",        // title type (trailing space — exact field name)
+    notes: "Notes",                 // rich_text type
+    recordingLink: "Recording Link", // url type
+    visibleToClient: "Share to Client", // checkbox type
+    // ⚠️  Internal Notes intentionally NOT listed
   },
   invoices: {
-    client: "Client",
-    invoiceNumber: "Invoice Number",
-    amount: "Amount",
-    currency: "Currency",
-    status: "Status",
-    dueDate: "Due Date",
-    pdfLink: "PDF Link",
-    visibleToClient: "Visible to Client",
+    // Finances [Client-Facing] database
+    client: "Client",                    // relation type
+    name: "Name of Transaction",        // title type
+    amount: "Amount",                   // number type (EUR)
+    date: "Date",                       // date type
+    status: "Status",                   // status type (Sent / Processing / Payed)
+    type: "Type",                       // select type
+    invoiceUrl: "Invoices",             // url type
+    visibleToClient: "Share to Client", // checkbox type
   },
 };
 
@@ -142,6 +109,9 @@ function getProp(page: any, propName: string, type: string): any {
       return prop.rich_text?.[0]?.plain_text ?? null;
     case "select":
       return prop.select?.name ?? null;
+    case "status":
+      // Notion "Status" property type (different from select)
+      return prop.status?.name ?? null;
     case "multi_select":
       return prop.multi_select?.map((s: any) => s.name) ?? [];
     case "checkbox":
@@ -163,15 +133,6 @@ function getProp(page: any, propName: string, type: string): any {
   }
 }
 
-// ─── Visible-to-client guard ──────────────────────────────────────────────────
-
-function isVisible(page: any, propName: string): boolean {
-  // If the property doesn't exist, default to NOT visible (safe default)
-  const prop = page.properties?.[propName];
-  if (!prop) return false;
-  return prop.checkbox === true;
-}
-
 // ─── Query helpers ────────────────────────────────────────────────────────────
 
 async function queryDatabase(
@@ -190,49 +151,22 @@ async function queryDatabase(
 // ─── Client lookup ────────────────────────────────────────────────────────────
 
 /**
- * Find a client by email address.
- * The "Authorized Emails" field should be a multi-select or rich_text with email(s).
- * We search for pages where the email appears in any text field.
+ * Find a client by their email address.
+ * Uses the "Email" field (Notion email type) on the Clients database.
  */
 export async function getClientByEmail(
   token: string,
   clientsDbId: string,
   email: string
-): Promise<{ id: string; notionPageId: string } & Record<string, any> | null> {
+): Promise<ReturnType<typeof extractClient> | null> {
   const pm = PROPERTY_MAP.clients;
 
-  // Try multi_select first (recommended), fallback filter approach
   const results = await queryDatabase(token, clientsDbId, {
-    and: [
-      {
-        property: pm.authorizedEmails,
-        multi_select: { contains: email },
-      },
-      {
-        property: pm.portalActive,
-        checkbox: { equals: true },
-      },
-    ],
+    property: pm.email,
+    email: { equals: email },
   });
 
-  if (results.length === 0) {
-    // Fallback: try rich_text email field
-    const fallback = await queryDatabase(token, clientsDbId, {
-      and: [
-        {
-          property: pm.authorizedEmails,
-          rich_text: { contains: email },
-        },
-        {
-          property: pm.portalActive,
-          checkbox: { equals: true },
-        },
-      ],
-    });
-    if (fallback.length === 0) return null;
-    return extractClient(fallback[0]);
-  }
-
+  if (results.length === 0) return null;
   return extractClient(results[0]);
 }
 
@@ -240,19 +174,19 @@ function extractClient(page: any) {
   const pm = PROPERTY_MAP.clients;
   return {
     notionPageId: page.id,
-    id: getProp(page, pm.clientId, "rich_text") ?? page.id,
+    id: page.id,
     name: getProp(page, pm.name, "title") ?? "Client",
-    currentPhase: getProp(page, pm.currentPhase, "select") ?? "",
-    status: getProp(page, pm.status, "select") ?? "Active",
-    healthStatus: getProp(page, pm.healthStatus, "select") ?? "",
-    mainGoal: getProp(page, pm.mainGoal, "rich_text") ?? "",
-    latestSummary: getProp(page, pm.latestSummary, "rich_text") ?? "",
-    nextSteps: getProp(page, pm.nextSteps, "rich_text") ?? "",
-    // ⚠️  Internal Notes intentionally NOT extracted
+    status: getProp(page, pm.status, "status") ?? "In progress",
+    services: getProp(page, pm.services, "multi_select") as string[] ?? [],
+    googleDrive: getProp(page, pm.googleDrive, "url") as string | null,
+    analyticsDashboard: getProp(page, pm.analyticsDashboard, "url") as string | null,
+    bookACall: getProp(page, pm.bookACall, "url") as string | null,
+    newDeliverable: getProp(page, pm.newDeliverable, "url") as string | null,
+    // ⚠️  Internal Notes, financial fields intentionally NOT extracted
   };
 }
 
-// ─── Tasks ────────────────────────────────────────────────────────────────────
+// ─── Tasks & Deliverables ─────────────────────────────────────────────────────
 
 export async function getClientTasks(
   token: string,
@@ -276,7 +210,7 @@ export async function getClientTasks(
   return results.map((page: any) => ({
     id: page.id,
     name: getProp(page, pm.name, "title") ?? "",
-    status: getProp(page, pm.status, "select") ?? "",
+    status: getProp(page, pm.status, "status") ?? "",
     priority: getProp(page, pm.priority, "select") ?? "",
     taskType: getProp(page, pm.taskType, "select") ?? "",
     dueDate: getProp(page, pm.dueDate, "date"),
@@ -285,42 +219,33 @@ export async function getClientTasks(
   }));
 }
 
-// ─── Reports ──────────────────────────────────────────────────────────────────
+// ─── Reports (Docs database filtered to Category = "📃Report") ───────────────
 
 export async function getClientReports(
   token: string,
-  reportsDbId: string,
+  docsDbId: string,
   clientNotionPageId: string
 ): Promise<any[]> {
   const pm = PROPERTY_MAP.reports;
 
   const results = await queryDatabase(
     token,
-    reportsDbId,
+    docsDbId,
     {
       and: [
         { property: pm.client, relation: { contains: clientNotionPageId } },
         { property: pm.visibleToClient, checkbox: { equals: true } },
+        { property: pm.category, select: { equals: "📃Report" } },
       ],
     },
-    [{ property: pm.date, direction: "descending" }]
+    [{ timestamp: "created_time", direction: "descending" }]
   );
 
   return results.map((page: any) => ({
     id: page.id,
-    period: getProp(page, pm.period, "rich_text") ?? "",
-    date: getProp(page, pm.date, "date"),
-    spend: getProp(page, pm.spend, "number"),
-    leads: getProp(page, pm.leads, "number"),
-    cpl: getProp(page, pm.cpl, "number"),
-    bookedCalls: getProp(page, pm.bookedCalls, "number"),
-    conversionRate: getProp(page, pm.conversionRate, "number"),
-    revenue: getProp(page, pm.revenue, "number"),
-    summary: getProp(page, pm.summary, "rich_text") ?? "",
-    wins: getProp(page, pm.wins, "rich_text") ?? "",
-    problems: getProp(page, pm.problems, "rich_text") ?? "",
-    nextSteps: getProp(page, pm.nextSteps, "rich_text") ?? "",
-    reportLink: getProp(page, pm.reportLink, "url"),
+    title: getProp(page, pm.name, "title") ?? "",
+    url: getProp(page, pm.url, "url"),
+    date: page.created_time ?? null,
   }));
 }
 
@@ -338,6 +263,7 @@ export async function getClientMeetings(
     meetingsDbId,
     {
       and: [
+        // Note: "Client " has a trailing space — exact field name
         { property: pm.client, relation: { contains: clientNotionPageId } },
         { property: pm.visibleToClient, checkbox: { equals: true } },
       ],
@@ -348,42 +274,79 @@ export async function getClientMeetings(
   return results.map((page: any) => ({
     id: page.id,
     date: getProp(page, pm.date, "date"),
+    // Note: "Meeting Title " has a trailing space — exact field name
     title: getProp(page, pm.title, "title") ?? "",
-    summary: getProp(page, pm.summary, "rich_text") ?? "",
-    decisions: getProp(page, pm.decisions, "rich_text") ?? "",
-    actionItems: getProp(page, pm.actionItems, "rich_text") ?? "",
-    nextSteps: getProp(page, pm.nextSteps, "rich_text") ?? "",
+    summary: getProp(page, pm.notes, "rich_text") ?? "",
+    // Meetings DB has a single "Notes" field; decisions/actionItems/nextSteps are
+    // always empty — the Meetings.tsx component renders them conditionally so
+    // empty strings simply won't render.
+    decisions: "",
+    actionItems: "",
+    nextSteps: "",
     recordingLink: getProp(page, pm.recordingLink, "url"),
     // ⚠️  Internal Notes intentionally NOT extracted
   }));
 }
 
-// ─── Links ────────────────────────────────────────────────────────────────────
+// ─── Links (derived from the Client record's URL fields) ─────────────────────
 
-export async function getClientLinks(
-  token: string,
-  linksDbId: string,
-  clientNotionPageId: string
-): Promise<any[]> {
-  const pm = PROPERTY_MAP.links;
+/**
+ * Links are not a separate database — they come from URL fields stored
+ * directly on the Client record (Google Drive, Analytics Dashboard, etc.).
+ * This avoids a second DB query and uses data that's already been fetched.
+ */
+export function extractClientLinks(
+  client: ReturnType<typeof extractClient>
+): any[] {
+  const links: Array<{
+    id: string;
+    type: string;
+    name: string;
+    url: string;
+    description: string;
+  }> = [];
 
-  const results = await queryDatabase(token, linksDbId, {
-    and: [
-      { property: pm.client, relation: { contains: clientNotionPageId } },
-      { property: pm.visibleToClient, checkbox: { equals: true } },
-    ],
-  });
+  if (client.googleDrive) {
+    links.push({
+      id: "google-drive",
+      type: "Google Drive",
+      name: "Google Drive Folder",
+      url: client.googleDrive,
+      description: "Your project files, creatives, and assets",
+    });
+  }
+  if (client.newDeliverable) {
+    links.push({
+      id: "deliverable",
+      type: "Google Drive",
+      name: "Latest Deliverable",
+      url: client.newDeliverable,
+      description: "Your most recent deliverable",
+    });
+  }
+  if (client.analyticsDashboard) {
+    links.push({
+      id: "analytics",
+      type: "Analytics Dashboard",
+      name: "Analytics Dashboard",
+      url: client.analyticsDashboard,
+      description: "Live campaign performance overview",
+    });
+  }
+  if (client.bookACall) {
+    links.push({
+      id: "book-call",
+      type: "Tool",
+      name: "Book a Call",
+      url: client.bookACall,
+      description: "Schedule a meeting with the Vellum Labs team",
+    });
+  }
 
-  return results.map((page: any) => ({
-    id: page.id,
-    type: getProp(page, pm.type, "select") ?? "",
-    name: getProp(page, pm.name, "title") ?? "",
-    url: getProp(page, pm.url, "url") ?? "",
-    description: getProp(page, pm.description, "rich_text") ?? "",
-  }));
+  return links;
 }
 
-// ─── Invoices ─────────────────────────────────────────────────────────────────
+// ─── Invoices (Finances [Client-Facing] database) ─────────────────────────────
 
 export async function getClientInvoices(
   token: string,
@@ -401,17 +364,17 @@ export async function getClientInvoices(
         { property: pm.visibleToClient, checkbox: { equals: true } },
       ],
     },
-    [{ property: pm.dueDate, direction: "descending" }]
+    [{ property: pm.date, direction: "descending" }]
   );
 
   return results.map((page: any) => ({
     id: page.id,
-    invoiceNumber: getProp(page, pm.invoiceNumber, "rich_text") ?? "",
+    invoiceNumber: getProp(page, pm.name, "title") ?? "",
     amount: getProp(page, pm.amount, "number"),
-    currency: getProp(page, pm.currency, "select") ?? "USD",
-    status: getProp(page, pm.status, "select") ?? "",
-    dueDate: getProp(page, pm.dueDate, "date"),
-    pdfLink: getProp(page, pm.pdfLink, "url"),
+    currency: "EUR", // Finances DB is always EUR
+    status: getProp(page, pm.status, "status") ?? "", // Sent / Processing / Payed
+    dueDate: getProp(page, pm.date, "date"),
+    pdfLink: getProp(page, pm.invoiceUrl, "url"),
   }));
 }
 
@@ -435,7 +398,6 @@ export async function createClientRequest(
     body: JSON.stringify({
       parent: { database_id: requestsDbId },
       properties: {
-        // Title = subject or a default
         Name: {
           title: [
             {
@@ -459,3 +421,4 @@ export async function createClientRequest(
     }),
   });
 }
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         
