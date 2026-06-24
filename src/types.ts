@@ -42,4 +42,18 @@ export interface ApiMeeting {
 
 export interface ApiLink {
   id: string;
-  type: string;        // "Google Drive" 
+  type: string;        // "Google Drive" | "Analytics Dashboard" | "Tool"
+  name: string;
+  url: string;
+  description: string;
+}
+
+export interface ApiInvoice {
+  id: string;
+  invoiceNumber: string; // "Name of Transaction" field
+  amount: number | null;
+  currency: string;      // always "EUR"
+  status: string;        // "Sent" | "Processing" | "Payed"
+  dueDate: string | null;
+  pdfLink: string | null;
+}
