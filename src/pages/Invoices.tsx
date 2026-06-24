@@ -21,7 +21,7 @@ export function Invoices() {
     <div className="space-y-6">
       <PageHeader title="Invoices" subtitle="Your billing history and payment status." />
 
-      {/* Summary stats — show skeleton while loading */}
+      {/* Summary stats */}
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
         {loading ? (
           [...Array(3)].map((_, i) => (
@@ -114,4 +114,6 @@ function InvoiceRow({ invoice }: { invoice: ApiInvoice }) {
 
 function formatDate(dateStr: string) {
   return new Date(dateStr).toLocaleDateString("en-US", {
-    month: "
+    month: "short", day: "numeric", year: "numeric",
+  });
+}
