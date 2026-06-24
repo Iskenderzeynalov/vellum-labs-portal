@@ -125,7 +125,7 @@ function SidebarContent({ onNavClick }: { onNavClick: () => void }) {
         ) : (
           <>
             <p className="text-sm font-medium text-zinc-200">{client?.name ?? "—"}</p>
-            <p className="text-xs text-zinc-500 mt-0.5">{client?.currentPhase ?? ""}</p>
+            <p className="text-xs text-zinc-500 mt-0.5">{client?.status ?? ""}</p>
           </>
         )}
       </div>
