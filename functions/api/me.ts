@@ -26,9 +26,9 @@ export const onRequestGet: PagesFunction<Env> = async (ctx) => {
     }
 
     return json(client);
-  } catch (err: any) {
+  } catch (err) {
     console.error("[/api/me]", err);
-    return json({ error: "Failed to load client data.", debug: err?.message }, 500);
+    return json({ error: "Failed to load client data." }, 500);
   }
 };
 
