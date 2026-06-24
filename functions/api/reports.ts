@@ -3,7 +3,7 @@ import { getClientByEmail, getClientReports } from "./_notion";
 interface Env {
   NOTION_TOKEN: string;
   NOTION_CLIENTS_DB_ID: string;
-  NOTION_DOCS_DB_ID: string; // Docs database — filtered to Category = "📃Report"
+  NOTION_DOCS_DB_ID: string;
 }
 
 export const onRequestGet: PagesFunction<Env> = async (ctx) => {
@@ -21,4 +21,5 @@ export const onRequestGet: PagesFunction<Env> = async (ctx) => {
 };
 
 function json(data: unknown, status = 200) {
-  return new Response(JSON.stringify(data), { status, hea
+  return new Response(JSON.stringify(data), { status, headers: { "Content-Type": "application/json" } });
+}

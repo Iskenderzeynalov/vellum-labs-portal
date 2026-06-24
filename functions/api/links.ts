@@ -25,4 +25,5 @@ export const onRequestGet: PagesFunction<Env> = async (ctx) => {
 };
 
 function json(data: unknown, status = 200) {
-  return new Resp
+  return new Response(JSON.stringify(data), { status, headers: { "Content-Type": "application/json" } });
+}
