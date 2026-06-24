@@ -16,7 +16,7 @@ export const onRequestGet: PagesFunction<Env> = async (ctx) => {
     return json(invoices);
   } catch (err) {
     console.error("[/api/invoices]", err);
-    return json({ error: "Failed to load invoices." }, 500);
+    return json({ error: "Failed to load invoices.", debug: (err as any)?.message }, 500);
   }
 };
 
